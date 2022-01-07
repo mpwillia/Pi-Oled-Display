@@ -10,7 +10,7 @@ Demo for ssd1306 i2c driver for  Raspberry Pi
 
 int main(void) 
 {
-    unsigned char symbol=0;
+    unsigned char symbol=3;
     ssd1306_begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS);      //LCD Screen initialization
     if(i2cd<0)
     {
@@ -21,15 +21,15 @@ int main(void)
     FirstGetIpAddress();                        //Get IP address
     while(1)
     {
-        LCD_Display(symbol);
-        sleep(1);
-        sleep(1);
-        sleep(1);
-        symbol++;
-        if(symbol==3)
-        {
-          symbol=0;
+        if(LCD_Display(symbol) < 0) {
+            symbol=0;  
         }
+        else {
+            //symbol++;
+            sleep(1);
+            sleep(1);
+            sleep(1);
+        } 
     }
     return 0;
 }

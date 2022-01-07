@@ -16,9 +16,22 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <fcntl.h>
+#include <limits.h>
+#include "time.h"
+
+
+/* Some Display Info
+ * We have 4 lines of height
+ * We have 16 chars of width
+ *
+ *
+ */
+
+
 
 
 char IPSource[20]={0};
+char Hostname[HOST_NAME_MAX+1]={0};
 int i2cd;
 
 // Init SSD1306
@@ -391,25 +404,73 @@ void LCD_DisplaySdMemory(void)
   }
 }
 
+void LCD_DisplayHostname(void)
+{
+  if(gethostname(Hostname, sizeof(Hostname)-1) != 0) {
+    strcpy(Hostname, "UNKNOWN");
+  }
+
+  printf("Current hostname is %s\n", Hostname);
+
+  //OLED_Clear();                             //Remove the interface
+  OLED_Clear();                                        //Remove the interface
+  //OLED_DrawBMP(0,0,128,4,BMP,0);
+  //OLED_ShowString(0,0,IPSource,8);          //Send the IP address to the lower machine
+  unsigned char buffer[sizeof(Hostname)+16]={0};
+  sprintf(buffer, "Hostname: %s ", Hostname); 
+  OLED_Clear();                                        //Remove the interface
+  OLED_DrawPartBMP(0,0,128,4,BMP,4);  
+  //OLED_ShowString(0,0,IPSource,8);          //Send the IP address to the lower machine
+  //OLED_ShowString(0,3,buffer,8);          //Send the IP address to the lower machine
+
+  //OLED_ShowString(20,3,Hostname,8);          //Send the IP address to the lower machine
+}
+
+
+void LCD_DisplayAllBitmaps(void) {
+  int numBitmaps = sizeof(BMP)/sizeof(BMP[0]);
+  for(int i = 0; i <= numBitmaps; i++)
+  {
+    OLED_Clear();                                        //Remove the interface
+    OLED_DrawBMP(0,0,128,4,BMP,i);
+    sleep(3);
+  }
+}
+
+
 /*
 *According to the information
 */
-void LCD_Display(unsigned char symbol)
+int LCD_Display(unsigned char symbol)
 {
   switch(symbol)
   {
     case 0:
+      printf("Displaying Temperature\n");
       LCD_DisplayTemperature();
     break;
     case 1:
+      printf("Displaying CPU Memory\n");
       LCD_DisPlayCpuMemory();
     break;
     case 2:
+      printf("Displaying SD Memory\n");
       LCD_DisplaySdMemory();
     break;
+    case 3:
+      printf("Displaying Hostname\n");
+      LCD_DisplayHostname();
+    break;
+    case 4:
+      return -1;
+      printf("Displaying All Bitmaps\n");
+      LCD_DisplayAllBitmaps();
+    break;
     default:
+      return -1;
     break;
   }
+  return symbol;
 }
 
 
